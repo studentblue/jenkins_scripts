@@ -1,0 +1,78 @@
+import groovy.json.*
+
+pipeline
+{
+	agent any
+	stages
+	{
+		stage('Create Json')
+		{
+		
+			
+			
+			steps
+			{
+				withFolderProperties
+				{
+					script
+					{
+						portus_user = env.PORTUS_USER
+						repo_url = env.REPO_URL
+						token = env.TOKEN
+						health_api = "/api/v1/health"
+						def response = httpRequest httpMode: 'GET', url: "${repo_url}${health_api}", customHeaders: [[name: 'Portus-Auth', value: "${portus_user}:${token}"]]
+						//println JsonOutput.toJson([name: 'John Doe', age: 42])
+						
+						if( response.status == 200 )
+						{
+							def responseGroovy =  new JsonSlurperClassic().parseText(response.content)
+							//def responseGroovy2 =  new JsonSlurperClassic().parseText(response.content)
+							println responseGroovy
+						}
+						else
+							error("Portus not Healthy")
+						
+						def image = "library/mongo"
+						def tag = "latest"
+						def login_template = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${image}:pull"
+						def get_manifest_template = "https://registry.hub.docker.com/v2/${image}/manifests/${tag}"
+						def accept_types = "application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifestv2+json"
+						
+						def response2 = httpRequest httpMode: 'GET', url: login_template
+						def response2Groovy = ""
+						
+						if( response2.status == 200 )
+						{
+							response2Groovy =  new JsonSlurperClassic().parseText(response2.content)							
+							println response2Groovy
+						}
+						else
+							error("DockerHub IO Auth not reachable")
+						
+						def dockerHubToken = response2Groovy["token"]
+						
+						def headers = [[name: "Authorization", value: "Bearer ${dockerHubToken}"], [name: "accept", value: accept_types]]
+						
+						def response3 = httpRequest httpMode: 'GET', url: get_manifest_template, contentType: 'APPLICATION_JSON', customHeaders: headers
+						def response3Groovy = ""
+						
+						if( response3.status == 200 )
+						{
+							response3Groovy =  new JsonSlurperClassic().parseText(response3.content)
+							//println response3Groovy
+						}
+						else
+							error("DockerHub not reachable")
+						
+						
+						response3Groovy["manifests"].each
+						{
+							m ->
+								println m
+						}
+					}
+				}
+			}
+		}
+	}
+}

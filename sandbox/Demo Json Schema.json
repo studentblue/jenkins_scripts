@@ -1,0 +1,232 @@
+/*
+def jsonEditorOptions = Boon.fromJson
+(/{
+	disable_edit_json: true,
+	disable_properties: true,
+	no_additional_properties: true,
+	disable_collapse: true,
+	disable_array_add: true,
+	disable_array_delete: true,
+	disable_array_reorder: true,
+	theme: "bootstrap2",
+	iconlib:"fontawesome4",
+	schema:
+	{
+		"type": "object",
+		"title": "Name",
+		"properties":
+		{
+			"first_name":
+			{
+				"type": "string",
+				"propertyOrder" : 1
+			},
+			"last_name":
+			{
+				"type": "string",
+				"propertyOrder" : 2
+			},
+			"choice":
+			{
+				"title": "Gender",
+				"type": "string",
+				"enum": ["m","f"],
+				"options":
+				{
+					"enum_titles": ["male","female"]
+				}
+			},
+			"full_name":
+			{
+				"type": "string",
+				"propertyOrder" : 3,
+				"template": "{{fname}} {{lname}}",
+				"watch":
+				{
+					"fname": "first_name",
+					"lname": "last_name"
+				}
+			}
+		}
+	},
+	startval:
+	{
+		"first_name" : "John",
+		"last_name" : "Doe",
+		"full_name" : "John Doe",
+		"choice": "m"
+	}
+}/);
+*/
+
+
+
+
+
+
+{
+	"title": "Payment Method",
+	"oneOf":
+	[
+		{
+			"title": "None",
+			"type": "null",
+			"options":
+			{
+				"disable_collapse": true,
+				"disable_edit_json": true,
+				"disable_properties": true,
+				"theme": "bootstrap3"
+			}
+		},
+		{
+			"title": "Bank EFT",
+			"type": "object",
+			"format": "grid",
+			"properties":
+			{
+				"bankName":
+				{
+					"title": "Bank name",
+					"type": "string",
+					"minLength": 5
+				},
+				"routingNumber":
+				{
+					"title": "Routing number",
+					"type": "string",
+					"minLength": 9
+				},
+				"accountNumber":
+				{
+					"title": "Account number",
+					"type": "string",
+					"minLength": 12
+				}
+			},
+			"required":
+			[
+				"bankName",
+				"routingNumber",
+				"accountNumber"
+			],
+			"additionalProperties": false,
+			"options":
+			{
+				"theme": "bootstrap3",
+				"disable_collapse": true,
+				"disable_edit_json": true,
+				"disable_properties": true
+			}
+		},
+		{
+			"title": "Credit Card",
+			"type": "object",
+			"format": "grid",
+			"properties":
+			{
+				"cardType":
+				{
+					"title": "Card type",
+					"type": "string",
+					"enum":
+					[
+						"Amex",
+						"Discover",
+						"MasterCard",
+						"Visa"
+					]
+				},
+				"cardNumber":
+				{
+					"title": "Card number",
+					"type": "string",
+					"minLength": 15,
+					"maxLength": 16
+				},
+				"expiration":
+				{
+					"title": "Expiration month",
+					"type": "string",
+					"format": "month"
+				},
+				"CCV":
+				{
+					"type": "string",
+					"maxLength": 4,
+					"minLength": 3,
+					"pattern": "[0-9]*"
+				}
+			},
+			"required":
+			[
+				"cardType",
+				"cardNumber",
+				"expiration",
+				"CCV"
+			],
+			"additionalProperties": false,
+			"options":
+			{
+				"theme": "bootstrap3",
+				"disable_collapse": true,
+				"disable_edit_json": true,
+				"disable_properties": true
+			}
+		}
+	],
+	"options":
+	{
+		"theme": "bootstrap3",
+		"disable_collapse": true,
+		"disable_edit_json": true,
+		"disable_properties": true
+	}
+}
+
+
+
+{	
+	"title": "Person",
+	"type": "object",
+	"properties":
+	{
+		"Do you have any pets?": { "type": "string", "enum": ["","No","Yes: One","Yes: More than one"]},
+		"How old is your pet?": { "type": "number"},
+		"How old is your oldest pet?": { "type": "number"}
+	},
+	"required": ["Do you have any pets?"],
+	"dependencies":
+	{
+		"Do you have any pets?":
+		{
+			"oneOf":
+			[
+				{
+					"properties":
+					{
+						"Do you have any pets?": { "enum": ["","No"] },
+						"How old is your pet?": { "enum": [] },
+						"How old is your oldest pet?": {"enum": []}
+					}
+				},
+				{
+					"properties": 
+					{
+						"Do you have any pets?": { "enum": ["Yes: One"] },
+						"How old is your oldest pet?": { "enum": [] }
+					},
+					"required": ["How old is your pet?"]
+				},
+				{
+					"properties": 
+					{
+						"Do you have any pets?": { "enum": [ "Yes: One"]},
+						"How old is your pet?": { "enum": [] }
+					},
+					"required": [ "How old is your oldest pet?"]
+				}
+			]
+		}
+	}
+}

@@ -1,0 +1,106 @@
+{
+	"disable_edit_json":true,
+	"disable_properties":true,
+	"no_additional_properties":true,
+	"disable_collapse":true,
+	"disable_array_add":true,
+	"disable_array_delete":true,
+	"disable_array_reorder":true,
+	"theme":"bootstrap3",
+	"schema":
+	{
+		"type":"object",
+		"title":"Portus Namespaces",
+		"properties":
+		{
+			"DockerHubRepoName":
+			{
+				"title":"Docker Hub Repo",
+				"type":"string",
+				"propertyOrder":1
+			},
+			"DockerHubRepoTag":
+			{
+				"title":"Docker Hub Repo Tag",
+				"type":"string",
+				"propertyOrder":2
+			},
+			"PortusNameSpaceSelector":
+			{
+				"title":"Portus Name-Space",
+				"type":"string",
+				"propertyOrder":3,
+				"enum":
+				[
+					"cpsiot_build_linux_v7_arm",
+					"test-post_repo",
+					"demo-share",
+					"testa",
+					"custom"
+				],
+				"options":
+				{
+					"enum_titles":
+						[
+							" Name: cpsiot_build_linux_v7_arm, Visibility: private, Team: testa-team",
+							" Name: test-post_repo ( test of team post ), Visibility: private, Team: demo-team",
+							" Name: demo-share ( Shared namespace ), Visibility: private, Team: demo-team",
+							" Name: testa ( This personal namespace belon ... ) , Visibility: private, Team: testa",
+							"Define own NameSpace"
+						]
+				}
+			},
+			"PortusNameSpaceDescription":
+			{
+				"title":"Custom Portus NameSpace",
+				"type":"string",
+				"propertyOrder":4
+			},
+			"PortusTeamSelector":
+			{
+				"title":"Portus Team for Name Space",
+				"type":"string",
+				"propertyOrder":5,
+				"enum":
+				[
+					"demo-team2",
+					"demo-team",
+					"testa-team",
+					"custom"
+				],
+				"options":
+				{
+					"enum_titles":
+					[
+						" Name: demo-team2 ( Test Team 2 )",
+						" Name: demo-team ( Super Duper De ... ) ",
+						" Name: testa-team ( Testas Team )",
+						"Define own Team"
+					]
+				}
+			},
+			"PortusTeamCustom":
+			{
+				"title":"Custom Portus Team",
+				"type":"string",
+				"propertyOrder":6
+			},
+			"PortusImageName":
+			{
+				"title":"Custom Portus Team",
+				"type":"string",
+				"propertyOrder":7
+			}
+		}
+	},
+	"startval":
+	{
+		"DockerHubRepoName":"debian",
+		"DockerHubRepoTag":"latest",
+		"PortusNameSpaceSelector":"cpsiot_build_linux_v7_arm",
+		"PortusNameSpaceDescription":"My Name Portus Name Space",
+		"PortusTeamSelector":"demo-team2",
+		"PortusTeamCustom":"My Portus Team",
+		"PortusImageName":"cpsiot-debian"
+	}
+}

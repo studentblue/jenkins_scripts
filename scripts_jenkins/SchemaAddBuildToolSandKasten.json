@@ -1,0 +1,167 @@
+{
+	"disable_edit_json":true,
+	"disable_properties":true,
+	"no_additional_properties":true,
+	"disable_collapse":true,
+	"disable_array_add":true,
+	"disable_array_delete":true,
+	"disable_array_reorder":true,
+	"theme":"bootstrap3",
+	"schema":
+	{
+		"title": "AddBuildTools Parameters",
+		"type": "object",
+		"properties":
+		{
+			"DockerHub":
+			{
+				"title": "Docker Hub Repo and Tag",
+				"type": "object",
+				"additionalProperties": false,
+				"properties":
+				{
+					"DockerHubRepoName":
+					{
+						"type": "string",
+						"default" : "My-Repo"
+					},
+					"DockerTagRepoName":
+					{
+						"type": "string",
+						"default" : "My-Tag"
+					}
+			    },
+			    "required": ["DockerHubRepoName"]
+			},
+			"PortusNameSpace":
+			{
+				"title": "Portus Name Space",
+				"type":"object",
+				"additionalProperties": false,
+				"properties":
+				{
+					"PortusNameSpace":
+					{
+					
+						"oneOf":
+						[
+							{
+								"required": ["PortusNameSpace"],
+								"type": "string",
+								"title":"Portus existing Name-Spaces",
+								"type":"string",
+								"default" : "testa",
+								"enum":
+								[
+									"cpsiot_build_linux_v7_arm",
+									"test-post_repo",
+									"demo-share",
+									"testa"
+								],
+								"options":
+								{
+									"enum_titles":
+										[
+											"cpsiot_build_linux_v7_arm",
+											"test-post_repo",
+											"demo-share",
+											"testa"
+										]
+								}
+							},
+							{
+								"required": ["PortusNameSpace"],
+								"title": "Create New NameSpace",
+								"type": "string",
+								"default" : "My-Namespace"
+							},
+							{
+								"required": ["PortusNameSpace"],
+								"title": "Generate Default Namespace",
+								"format": "checkbox",
+								"type": "boolean",
+								"readOnly": true,
+								"default" : true
+							}
+						]
+					},
+					"PortusNameSpaceDescription":
+					{
+						"type": "string",
+						"default" : "My Description"
+					}
+				}
+			},
+			"PortusTeam":
+			{
+				"title": "Portus Team",
+				"type":"object",
+				"additionalProperties": false,
+				"properties":
+				{
+					"PortusTeamName":
+					{
+					
+						"oneOf":
+						[
+							{
+								"type": "string",
+								"title":"Portus existing Teams",
+								"type":"string",
+								"default" : "Team1",
+								"enum":
+								[
+									"Team1",
+									"Team2",
+									"Team3"
+								],
+								"options":
+								{
+									"enum_titles":
+										[
+											"Team1",
+											"Team2",
+											"Team3"
+										]
+								}
+							},
+							{
+								"title": "Create New Team",
+								"type": "string",
+								"default" : "My New Team"
+							}
+						]
+					}
+				}
+			},
+			"PortusImage":
+			{
+				"title": "Portus Image",
+				"type":"object",
+				"additionalProperties": false,
+				"properties":
+				{
+					"PortusImageName":
+					{
+					
+						"oneOf":
+						[
+							{
+								"type": "string",
+								"title":"Define your Image Name",
+								"type":"string",
+								"default" : "My-Image-Name"
+							},
+							{
+								"title": "Generate default",
+								"type": "boolean",
+								"readOnly": true,
+								"default" : true
+							}
+						]
+					}
+				}
+			}
+		}
+	}
+}

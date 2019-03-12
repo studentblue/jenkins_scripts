@@ -1,0 +1,62 @@
+import groovy.json.*
+import org.boon.Boon
+
+//"$schema":"http://json-schema.org/draft-04/schema",
+
+def jsonEditorOptions = Boon.fromJson(/{
+	disable_edit_json: true,
+	disable_properties: true,
+	no_additional_properties: true,
+	disable_collapse: true,
+	disable_array_add: true,
+	disable_array_delete: true,
+	disable_array_reorder: true,
+	theme: "bootstrap3",	
+	keep_oneof_values : false,
+	display_required_only: true,
+	show_errors: always,
+	compact: true,
+	template: "mustache",
+	"schema":
+	{
+
+		"definitions":
+		{
+			"address": 
+			{
+				"type": "object",
+				"properties": 
+				{
+					"street_address": { "type": "string" },
+					"city":           { "type": "string" },
+					"state":          { "type": "string" }
+				},
+				"required": ["street_address", "city", "state"]
+			}
+		},
+
+		"type": "object"
+	},
+	startval:
+	{
+		"billing_address":
+		{
+			"street_address": street1,
+			"city": city1,
+			"state": state1
+		},
+		"shipping_address":
+		{
+			"street_address": street2,
+			"city": city2,
+			"state": state2
+		}
+	}
+}/);
+
+
+jsonEditorOptions.schema.properties = [ "billing_address": [:] , "shipping_address": [:] ]
+jsonEditorOptions.schema.properties.billing_address.put( "\$ref", "#/definitions/address"  )
+jsonEditorOptions.schema.properties.shipping_address.put( "\$ref", "#/definitions/address"  )
+//println jsonEditorOptions.schema.properties
+return jsonEditorOptions 

@@ -1,0 +1,129 @@
+import groovy.json.*
+import org.boon.Boon
+
+//"$schema":"http://json-schema.org/draft-04/schema",
+
+def jsonEditorOptions = Boon.fromJson(/{
+	disable_edit_json: true,
+	disable_properties: true,
+	no_additional_properties: true,
+	disable_collapse: true,
+	disable_array_add: true,
+	disable_array_delete: true,
+	disable_array_reorder: true,
+	theme: "bootstrap3",	
+	keep_oneof_values : false,
+	display_required_only: true,
+	show_errors: always,
+	compact: true,
+	template: "mustache",
+	"schema":
+	{
+		type:	object,
+		properties:
+		{
+			"DockerHub":
+			{
+				"type": "object",
+				format: grid,
+				"properties":
+				{
+					repo:	{type:string, "propertyOrder": 1},
+					tag:	{type:string, "propertyOrder": 2}
+				},
+				additionalProperties: false
+			},
+			"Portus":
+			{
+				type:object,
+				additionalProperties: false,
+				format: grid,
+				properties:
+				{
+					namespace:
+					{
+						oneOf:
+						[
+							{
+								title: portus, type:string, enum:[namespace1, namespace2, namespace3], "maxLength": 30
+							},
+							{
+								title: new, type:string, "maxLength": 30
+
+							}
+						]
+					},
+					repo:
+					{
+						oneOf:
+						[
+							{
+								title: portus, type:string, enum:[repo1, repo2, repo3], "maxLength": 30
+							},
+							{
+								title: new, type:string, "maxLength": 30
+							}
+						]
+					},
+					tag:
+					{
+						oneOf:
+						[
+							{
+								title: generate, type:boolean, readOnly: true, default: true, format: checkbox
+							},
+							{
+								title: "new",type:string, "maxLength": 30
+							}
+						]
+					}
+				}
+			},
+			"PortusTeam":
+			{
+				type:object,
+				format: grid,
+				oneOf:
+				[
+					{
+						title: existing team,
+						additionalProperties: false,
+						properties:
+						{
+							name:	{title: team name,type:string, "propertyOrder": 1, enum: [1, 2, 3], "options":{"enum_titles": [team1, team2, team3]}}
+						}
+					},
+					{
+						title: new team,
+						additionalProperties: false,
+						properties:
+						{
+							new:	{type:boolean, "propertyOrder": 1, readOnly: true, default: true, format: checkbox},
+							name:	{title: team name,type:string, "propertyOrder": 2}
+						}
+					}
+				]
+			},
+		}
+	},
+	startval:
+	{
+		"DockerHub":
+		{
+			repo:	"",
+			tag:	""
+		},
+		"Portus":
+		{
+			namespace: namespace1,
+			tag: "",
+			repo: repo1
+			
+		},
+		"PortusTeam":
+		{
+			name: 1
+		}
+	}
+}/);
+//new: {type:boolean, "propertyOrder": 1, readOnly: true, default: true, format: checkbox},
