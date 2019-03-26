@@ -171,7 +171,7 @@ def jsonEditorOptions = Boon.fromJson(/{
 							"title": "DB",
 							properties:
 							{
-								buildImage:{type: string, enum:[one1, one2, one3], default: one1, "propertyOrder": 1},								
+								buildImage:{type: string, enum:[one1, one2, one3], "propertyOrder": 1},								
 								repo:{title: "\/repo", type: string, default: my-database, "propertyOrder": 3},
 								database:{type: boolean, default: true, readOnly: true, format: checkbox, options:{ hidden: true}}
 							},
@@ -182,7 +182,7 @@ def jsonEditorOptions = Boon.fromJson(/{
 							"title": "SERVICE_REGISTRY",
 							properties:
 							{
-								buildImage:{type: string, enum:[one1, one2, one3], default: one1, "propertyOrder": 1},								
+								buildImage:{type: string, enum:[one1, one2, one3],  "propertyOrder": 1},								
 								repo:{title: "\/repo", type: string, default: my-service-registry, "propertyOrder": 3},
 								registry:{type: boolean, default: true, readOnly: true, format: checkbox, options:{hidden:true}},
 								artifacts_path: { type: string, default: "serviceregistry_sql\/target\/", "propertyOrder": 4},
@@ -198,7 +198,7 @@ def jsonEditorOptions = Boon.fromJson(/{
 							},
 							required:
 							[
-								repo,registry, buildImage
+								repo,registry
 							],
 							"additionalProperties": false
 						},
@@ -206,7 +206,7 @@ def jsonEditorOptions = Boon.fromJson(/{
 							"title": "AUTHORIZATION",
 							properties:
 							{
-								buildImage:{type: string, enum:[one1, one2, one3], default: one1, "propertyOrder": 1},								
+								buildImage:{type: string, enum:[one1, one2, one3],  "propertyOrder": 1},								
 								repo:{title: "\/repo", type: string, default: my-authorization, "propertyOrder": 3},
 								authorization:{type: boolean, default: true, readOnly: true, format: checkbox, options:{hidden:true}},
 								artifacts_path: { type: string, default: "authorization\/target\/", "propertyOrder": 4},
@@ -227,7 +227,7 @@ def jsonEditorOptions = Boon.fromJson(/{
 							"title": "GATEWAY",
 							properties:
 							{
-								buildImage:{type: string, enum:[one1, one2, one3], default: one1, "propertyOrder": 1},								
+								buildImage:{type: string, enum:[one1, one2, one3], "propertyOrder": 1},								
 								repo:{title: "\/repo", type: string, default: my-gateway, "propertyOrder": 3},
 								gateway:{type: boolean, default: true, readOnly: true, format: checkbox, options:{hidden:true}},
 								artifacts_path: { type: string, default: "gateway\/target\/", "propertyOrder": 4},
@@ -248,7 +248,7 @@ def jsonEditorOptions = Boon.fromJson(/{
 							"title": "EVENTHANDLER",
 							properties:
 							{
-								buildImage:{type: string, enum:[one1, one2, one3], default: one1, "propertyOrder": 1},								
+								buildImage:{type: string, enum:[one1, one2, one3], "propertyOrder": 1},								
 								repo:{title: "\/repo", type: string, default: my-eventhandler, "propertyOrder": 3},
 								eventhandler:{type: boolean, default: true, readOnly: true, format: checkbox, options:{hidden:true}},
 								artifacts_path: { type: string, default: "eventhandler\/target\/", "propertyOrder": 4},
@@ -269,7 +269,7 @@ def jsonEditorOptions = Boon.fromJson(/{
 							"title": "GATEKEEPER",
 							properties:
 							{
-								buildImage:{type: string, enum:[one1, one2, one3], default: one1, "propertyOrder": 1},								
+								buildImage:{type: string, enum:[one1, one2, one3], "propertyOrder": 1},								
 								repo:{title: "\/repo", type: string, default: my-gatekeeper, "propertyOrder": 3},
 								gatekeeper:{type: boolean, default: true, readOnly: true, format: checkbox, options:{hidden:true}},
 								artifacts_path: { type: string, default: "gatekeeper\/target\/", "propertyOrder": 4},
@@ -290,7 +290,7 @@ def jsonEditorOptions = Boon.fromJson(/{
 							"title": "ORCHESTRATOR",
 							properties:
 							{
-								buildImage:{type: string, enum:[one1, one2, one3], default: one1, "propertyOrder": 1},
+								buildImage:{type: string, enum:[one1, one2, one3], "propertyOrder": 1},
 								repo:{title: "\/repo", type: string, default: my-orchestrator, "propertyOrder": 3},
 								orchestrator:{type: boolean, default: true, readOnly: true, format: checkbox, options:{hidden:true}},
 								artifacts_path: { type: string, default: "orchestrator\/target\/", "propertyOrder": 4},
@@ -659,65 +659,105 @@ repos.each
 {
 	repo ->
 			
-		if( repo.namespace.name.startsWith("cpsiot-build") )
+		//~ if( repo.namespace.name.startsWith("cpsiot-build") )
+		//~ {
+		def image = repo.namespace.name + "/" + repo.name
+		
+		def tags = portusApiGET(url, "/api/v1/repositories/"+repo.id+"/tags", user, pass)
+		
+		tags.each
 		{
-			def image = repo.namespace.name + "/" + repo.name
-			
-			def tags = portusApiGET(url, "/api/v1/repositories/"+repo.id+"/tags", user, pass)
-			
-			tags.each
-			{
-				tag ->
-					
-					if( tag.name.contains( TYPE_JAVA_TAG_ID ) )
-						javaBuildImages.add( image + ":" + tag.name )
-					
-					if( tag.name.contains( TYPE_MYSQL_TAG_ID ) )
-						mysqlBuildImages.add( image + ":" + tag.name )
-					
-					if( tag.name.contains( TYPE_MAVEN_TAG_ID ) )
-						mavenBuildImages.add( image + ":" + tag.name )
-					
-					buildImages.add(image + ":" + tag.name)
-			}
+			tag ->
+				
+				if( tag.name.contains( TYPE_JAVA_TAG_ID ) )
+					javaBuildImages.add( image + ":" + tag.name )
+				
+				if( tag.name.contains( TYPE_MYSQL_TAG_ID ) )
+					mysqlBuildImages.add( image + ":" + tag.name )
+				
+				if( tag.name.contains( TYPE_MAVEN_TAG_ID ) )
+					mavenBuildImages.add( image + ":" + tag.name )
+				
+				buildImages.add(image + ":" + tag.name)
 		}
+		//~ }
 		
 }
-
-jsonEditorOptions.schema.properties.NameSpace.oneOf[0].properties.team.oneOf = []
-
-teams.each
+if( teams )
 {
-	team -> 
-			
-		def props = [
-						"id": ["type": "integer", "default": team.id, "readOnly": true],
-						"name": ["type": "string", "default": team.name, "readOnly": true],
-						"description": ["type": "string", "default": (team.description ? team.description : "") , "readOnly": true],						
-						"hidden": ["type": "boolean", "default": team.hidden, "readOnly": true, "format": "checkbox"]
-					]
-
-  		def temp = ["title": team.name, "type": "object", "format": "grid", "propertyOrder": 1, "properties": props ]
-		jsonEditorOptions.schema.properties.NameSpace.oneOf[0].properties.team.oneOf.add( temp )
+	jsonEditorOptions.schema.properties.NameSpace.oneOf[0].properties.team.oneOf = []
+	
+	teams.each
+	{
+		team -> 
+				
+			def props = [
+							"id": ["type": "integer", "default": team.id, "readOnly": true],
+							"name": ["type": "string", "default": team.name, "readOnly": true],
+							"description": ["type": "string", "default": (team.description ? team.description : "") , "readOnly": true],						
+							"hidden": ["type": "boolean", "default": team.hidden, "readOnly": true, "format": "checkbox"]
+						]
+	
+	  		def temp = ["title": team.name, "type": "object", "format": "grid", "propertyOrder": 1, "properties": props ]
+			jsonEditorOptions.schema.properties.NameSpace.oneOf[0].properties.team.oneOf.add( temp )
+	}
+}
+else
+{
+	jsonEditorOptions.schema.properties.NameSpace.oneOf[0].properties.team = 
+	[
+		"title": "new team", "type": "object", "format": "grid", "properties":
+		[
+			"name": ["type": "string", "default": "My Team "],
+			"description": ["type": "string", "default": "My Deploy Team" ],						
+			"new": [ "type": "boolean", "default": "true", "readOnly": true, "options": [ "hidden": true ] ]
+		]
+	]
 }
 
-jsonEditorOptions.schema.properties.NameSpace.oneOf[1].properties.name.enum = cloudNameSpaces
+if( cloudNameSpaces )
+	jsonEditorOptions.schema.properties.NameSpace.oneOf[1].properties.name.enum = cloudNameSpaces
+else
+	jsonEditorOptions.schema.properties.NameSpace.oneOf[1].properties.name.enum = [""]
 
-jsonEditorOptions.schema.properties.Compile.properties.image.oneOf[1].properties.name.enum = mavenBuildImages
+if(mavenBuildImages)
+	jsonEditorOptions.schema.properties.Compile.properties.image.oneOf[1].properties.name.enum = mavenBuildImages
+else
+	jsonEditorOptions.schema.properties.Compile.properties.image.oneOf[1].properties.name.enum = [""]
 
-jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.buildImage.enum = mysqlBuildImages
+if( mysqlBuildImages )
+	jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.buildImage.enum = mysqlBuildImages
+else
+	jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.buildImage.enum = [""]
 
-jsonEditorOptions.schema.properties.Images.items.oneOf[1].properties.buildImage.enum = javaBuildImages
-
-jsonEditorOptions.schema.properties.Images.items.oneOf[2].properties.buildImage.enum = javaBuildImages
-
-jsonEditorOptions.schema.properties.Images.items.oneOf[3].properties.buildImage.enum = javaBuildImages
-
-jsonEditorOptions.schema.properties.Images.items.oneOf[4].properties.buildImage.enum = javaBuildImages
-
-jsonEditorOptions.schema.properties.Images.items.oneOf[5].properties.buildImage.enum = javaBuildImages
-
-jsonEditorOptions.schema.properties.Images.items.oneOf[6].properties.buildImage.enum = javaBuildImages
+if( javaBuildImages )
+{
+	jsonEditorOptions.schema.properties.Images.items.oneOf[1].properties.buildImage.enum = javaBuildImages
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[2].properties.buildImage.enum = javaBuildImages
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[3].properties.buildImage.enum = javaBuildImages
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[4].properties.buildImage.enum = javaBuildImages
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[5].properties.buildImage.enum = javaBuildImages
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[6].properties.buildImage.enum = javaBuildImages
+}
+else
+{	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[1].properties.buildImage.enum = [""]
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[2].properties.buildImage.enum = [""]
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[3].properties.buildImage.enum = [""]
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[4].properties.buildImage.enum = [""]
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[5].properties.buildImage.enum = [""]
+	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[6].properties.buildImage.enum = [""]
+}
 
 if( mavenBuildImages )
 	jsonEditorOptions.startval.Compile.image.name = mavenBuildImages[0]
@@ -729,9 +769,14 @@ if( cloudNameSpaces )
 else
 	jsonEditorOptions.startval.NameSpace.name = ""
 
-if( mysqlBuildImages && javaBuildImages )
-{
+if( mysqlBuildImages )
 	jsonEditorOptions.startval.Images[0].buildImage = mysqlBuildImages[0]
+else
+	jsonEditorOptions.startval.Images[0].buildImage = ""
+
+if( javaBuildImages )
+{
+	
 	jsonEditorOptions.startval.Images[1].buildImage = javaBuildImages[0]
 	jsonEditorOptions.startval.Images[2].buildImage = javaBuildImages[0]
 	jsonEditorOptions.startval.Images[3].buildImage = javaBuildImages[0]
@@ -741,7 +786,7 @@ if( mysqlBuildImages && javaBuildImages )
 }
 else
 {
-	jsonEditorOptions.startval.Images[0].buildImage = ""
+	
 	jsonEditorOptions.startval.Images[1].buildImage = ""
 	jsonEditorOptions.startval.Images[2].buildImage = ""
 	jsonEditorOptions.startval.Images[3].buildImage = ""

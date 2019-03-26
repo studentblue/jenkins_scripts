@@ -441,21 +441,63 @@ jsonEditorOptions.startval.Namespace.name =
 	"team": ( startNameSpace.team ? startNameSpace.team.name : ""), "visibility": startNameSpace.visibility
 ]
 
-jsonEditorOptions.schema.properties.Namespace.oneOf[1].properties.team.oneOf[0].oneOf = []
-
-teams.each
+if( teams )
 {
-	team -> 
-			
-		def props = [
-						"id": ["type": "integer", "default": team.id, "readOnly": true],
-						"name": ["type": "string", "default": team.name, "readOnly": true],
-						"description": ["type": "string", "default": (team.description ? team.description : "") , "readOnly": true],						
-						"hidden": ["type": "boolean", "default": team.hidden, "readOnly": true, "format": "checkbox"]
-					]
+	jsonEditorOptions.schema.properties.Namespace.oneOf[1].properties.team.oneOf[0].oneOf = []
+	
+	teams.each
+	{
+		team -> 
+				
+			def props = [
+							"id": ["type": "integer", "default": team.id, "readOnly": true],
+							"name": ["type": "string", "default": team.name, "readOnly": true],
+							"description": ["type": "string", "default": (team.description ? team.description : "") , "readOnly": true],						
+							"hidden": ["type": "boolean", "default": team.hidden, "readOnly": true, "format": "checkbox"]
+						]
+	
+	  		def temp = ["title": team.name, "type": "object", "format": "grid", "propertyOrder": 1, "properties": props ]
+			jsonEditorOptions.schema.properties.Namespace.oneOf[1].properties.team.oneOf[0].oneOf.add( temp )
+	}
+}
+else
+{
 
-  		def temp = ["title": team.name, "type": "object", "format": "grid", "propertyOrder": 1, "properties": props ]
-		jsonEditorOptions.schema.properties.Namespace.oneOf[1].properties.team.oneOf[0].oneOf.add( temp )
+	jsonEditorOptions.schema.properties.Namespace.oneOf[1].properties.team =
+	[
+		"type": "object", "format": "grid", "title": "new team",
+		"properties" :
+		[
+			"name": ["title": "teamname", "type": "string", "propertyOrder": 3],
+			"new": [ "type": "boolean", "default": "true", "readOnly": true, "options": [ "hidden": true ] ],
+			"description": [ "title": "team description ( optional )", "type": "string", "propertyOrder": 5 ]
+		]
+	]
+	/*
+	type: object,
+	display: grid,
+	title: new team,
+	properties:
+	{
+		name: 
+		{
+			title: teamname, type:string,
+			"propertyOrder": 3
+		},
+		new:
+		{
+			type: boolean, default: true, title: new team , format: checkbox, readOnly: true,
+			"propertyOrder": 4
+		},
+		description: 
+		{
+			title: team description ( optional ), type:string,
+			"propertyOrder": 5
+		}
+	}
+	*/
+	
+	
 }
 
 //~ jsonEditorOptions.schema.properties.Namespace.oneOf[1].properties.team.oneOf[0].enum = getTeamsFromData( teams , "V")
