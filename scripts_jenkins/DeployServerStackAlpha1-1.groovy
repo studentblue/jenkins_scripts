@@ -104,16 +104,17 @@ def jsonEditorOptions = Boon.fromJson(/{
 									oneOf:
 									[
 										{
-										
-										title: input,
-										type: string, default: "My SQL script here",
-										description: "New Namespace for this stack under which all images will be pushed"
-										},
-										{
 											title: generate,
 											type: boolean, readOnly:true, default: true, format: checkbox,
 											description: "Generate SQL Init for DB"
+										},
+										{
+										
+										title: input,
+										type: string, default: "",
+										description: "Macros: __DB__ -> ArrowHead DB, __DB_LOG__ -> ArrowHead Log DB, __DB_USER__ -> Arrowhead User, __DB_PSW__ -> ArrowHead User Psw ", format: textarea
 										}
+										
 									]								
 								}
 							},
@@ -1440,13 +1441,21 @@ def getNodesForOwner(user)
 		
 		OwnershipDescription descr = NodeOwnerHelper.Instance.getOwnershipDescription(aSlave);
 		//println "Owner: "+OwnershipDescriptionHelper.getOwnerID(descr);
-		owner = OwnershipDescriptionHelper.getOwnerID(descr)
+		//~ owner = OwnershipDescriptionHelper.getOwnerID(descr)
+		def owners = OwnershipDescriptionHelper.getAllOwnerIdsString(descr).split(',')
 		
+		def isOwner = false
 		
-		
-		if( owner.equals(user) )
+		for( owner in owners)
 		{
-			
+			if( owner.equals(user) )
+				isOwner = true
+		}
+		//jenkins-slave1-cpsiot-2018
+		
+		if( isOwner &&  ! aSlave.name.startsWith('jenkins-slave') )
+		{
+			//~ println aSlave.name
 			
 			if( ! aSlave.getComputer().isOffline() )
 			{
@@ -1720,13 +1729,16 @@ def ehBuildImages = []
 def gkBuildImages = []
 def orchBuildImages = []
 
-def repos = portusApiGET(url, "/api/v1/repositories?all=true", user, pass)
+def repos = []
 
 def buildImages = []
 
 def owner = getFolderOwner(base)
 
 def nodes = getNodesForOwner(owner)
+
+if( nodes )
+	repos = portusApiGET(url, "/api/v1/repositories?all=true", user, pass)
 
 repos.each
 {
@@ -1951,45 +1963,130 @@ if( nodes )
 	//jsonEditorOptions.startval.Node.name = nodesEnum[0]
 
 	if( dbBuildImages )
-		jsonEditorOptions.startval.Images[0].deployImage = dbBuildImages[0]
+	{
+		//~ jsonEditorOptions.startval.Images[0].deployImage = dbBuildImages[0]
+		def imageTemp1 = jsonEditorOptions.startval.Images.find{it.database == true}
+		imageTemp1.deployImage = dbBuildImages[0]
+	}
 	else
-		jsonEditorOptions.startval.Images[0].deployImage = ""
+	{
+		jsonEditorOptions.startval.Images.removeAll{it.database == true}
+		//~ jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.deployImage.enum = dbBuildImages
+		jsonEditorOptions.schema.properties.Images.items.oneOf.removeAll{it.properties.database}
+	}
 	
 	if( srBuildImages )
-		jsonEditorOptions.startval.Images[1].deployImage = srBuildImages[0]
+	{
+		//~ jsonEditorOptions.startval.Images[1].deployImage = srBuildImages[0]
+		def imageTemp1 = jsonEditorOptions.startval.Images.find{it.registry == true}
+		imageTemp1.deployImage = srBuildImages[0]
+	}
 	else
-		jsonEditorOptions.startval.Images[1].deployImage = ""
+	{
+		jsonEditorOptions.startval.Images.removeAll{it.registry == true}
+		jsonEditorOptions.schema.properties.Images.items.oneOf.removeAll{it.properties.registry}
+	}
 	
 	if( authBuildImages )
-		jsonEditorOptions.startval.Images[2].deployImage = authBuildImages[0]
+	{
+		//~ jsonEditorOptions.startval.Images[2].deployImage = authBuildImages[0]
+		def imageTemp1 = jsonEditorOptions.startval.Images.find{it.authorization == true}
+		imageTemp1.deployImage = authBuildImages[0]
+	}
 	else
-		jsonEditorOptions.startval.Images[2].deployImage = ""
+	{
+		jsonEditorOptions.startval.Images.removeAll{it.authorization == true}
+		jsonEditorOptions.schema.properties.Images.items.oneOf.removeAll{it.properties.authorization}
+	}
 	
 	if(gatewayBuildImages)
-		jsonEditorOptions.startval.Images[3].deployImage = gatewayBuildImages[0]
+	{
+		//~ jsonEditorOptions.startval.Images[3].deployImage = gatewayBuildImages[0]
+		def imageTemp1 = jsonEditorOptions.startval.Images.find{it.gateway == true}
+		imageTemp1.deployImage = gatewayBuildImages[0]
+		
+	}
 	else
-		jsonEditorOptions.startval.Images[3].deployImage = ""
+	{
+		jsonEditorOptions.startval.Images.removeAll{it.gateway == true}
+		jsonEditorOptions.schema.properties.Images.items.oneOf.removeAll{it.properties.gateway}
+	}
 	
 	if(ehBuildImages)
-		jsonEditorOptions.startval.Images[4].deployImage = ehBuildImages[0]
+	{
+		//~ jsonEditorOptions.startval.Images[4].deployImage = ehBuildImages[0]
+		def imageTemp1 = jsonEditorOptions.startval.Images.find{it.eventhandler == true}
+		imageTemp1.deployImage = ehBuildImages[0]
+	}
 	else
-		jsonEditorOptions.startval.Images[4].deployImage = ""
+	{
+		jsonEditorOptions.startval.Images.removeAll{it.eventhandler == true}
+		jsonEditorOptions.schema.properties.Images.items.oneOf.removeAll{it.properties.eventhandler}
+	}
 	
 	if(gkBuildImages)
-		jsonEditorOptions.startval.Images[5].deployImage = gkBuildImages[0]
+	{
+		//~ jsonEditorOptions.startval.Images[5].deployImage = gkBuildImages[0]
+		def imageTemp1 = jsonEditorOptions.startval.Images.find{it.gatekeeper == true}
+		imageTemp1.deployImage = gkBuildImages[0]
+	}
 	else
-		jsonEditorOptions.startval.Images[5].deployImage = ""
+	{
+		jsonEditorOptions.startval.Images.removeAll{it.gatekeeper == true}
+		jsonEditorOptions.schema.properties.Images.items.oneOf.removeAll{it.properties.gatekeeper}
+	}
 	
 	if(orchBuildImages)
-		jsonEditorOptions.startval.Images[6].deployImage = orchBuildImages[0]
+	{
+		//~ jsonEditorOptions.startval.Images[6].deployImage = orchBuildImages[0]
+		def imageTemp1 = jsonEditorOptions.startval.Images.find{it.orchestrator == true}
+		imageTemp1.deployImage = orchBuildImages[0]
+	}
 	else
-		jsonEditorOptions.startval.Images[6].deployImage = ""
+	{
+		jsonEditorOptions.startval.Images.removeAll{it.orchestrator == true}
+		jsonEditorOptions.schema.properties.Images.items.oneOf.removeAll{it.properties.orchestrator}
+	}
 	
-	
+	if( ! jsonEditorOptions.schema.properties.Images.items.oneOf )
+	{
+		jsonEditorOptions.schema.properties.remove("Images")
+		jsonEditorOptions.schema.properties.remove("Docker")
+		jsonEditorOptions.schema.properties.remove("ArrowHead")
+		jsonEditorOptions.schema.properties.remove("Logger")
+		
+		jsonEditorOptions.startval.remove("Images")
+		jsonEditorOptions.startval.remove("Docker")
+		jsonEditorOptions.startval.remove("ArrowHead")
+		jsonEditorOptions.startval.remove("Logger")
+		
+		jsonEditorOptions.schema.properties.put("Docker",
+			[
+				"type": "object",
+				"properties":
+				[
+					"Message":["type": "string", "readOnly": true]
+				],
+				"additionalProperties": false
+			]
+		)
+		
+		jsonEditorOptions.startval.put("Docker", ["Message": "No Images to Deploy found in Registry"])
+	}
+	else
+	{
+		if( ! nodes[0].networks )
+		jsonEditorOptions.startval.Docker.cloud = "my-cloud"
+	}
 	jsonEditorOptions.startval.Node = generateNodeStart(nodes)
 	
-	if( ! nodes[0].networks )
-		jsonEditorOptions.startval.Docker.cloud = "my-cloud"
+	
+	
+	//~ if( ! jsonEditorOptions.startval.Images )
+	//~ {
+		//~ jsonEditorOptions.startval.remove("Docker")
+		//~ jsonEditorOptions.startval.remove("ArrowHead")
+	//~ }
 }
 else
 {
