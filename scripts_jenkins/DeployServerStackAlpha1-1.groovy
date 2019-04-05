@@ -1464,7 +1464,16 @@ def getNodesForOwner(user)
 				information.put("kernel", checkNode( aSlave,  "kernel" ) )
 				information.put("name", aSlave.name )
 				information.put("os", aSlave.getComputer().getOSDescription())
-				information.put("networks", checkNode( aSlave,  "docker_networks" ) )
+				try
+				{
+					information.put("docker", checkNode( aSlave,  "docker" ) )
+					information.put("networks", checkNode( aSlave,  "docker_networks" ) )
+				}
+				catch(Exception e)
+				{
+					information.put("networks", [] )
+					information.put("docker", false )
+				}
 				//~ information.put("containers", checkNode( aSlave,  "containers" ) )
 				
 				artifacts.add(information)
@@ -1507,7 +1516,17 @@ def checkNode( slave, op)
 	def unameCmd = 'def proc = "uname -a".execute(); proc.waitFor(); println proc.in.text';
 	def networksCmd = 'def proc = "docker network ls --format {{.Name}}:__:".execute(); proc.waitFor(); println proc.in.text';
 	def containersCmd = 'def proc = "docker ps -a --format \'{{.Names}}__is__{{.Status}}\'".execute(); proc.waitFor(); println proc.in.text';
+	//def dockerCmd = 'def proc = "docker version --format {{json .}}".execute(); proc.waitFor(); println proc.in.text';
+	def dockerCmd = 'def proc = [\'bash\',\'-c\',\'\'\' docker version --format "{{json .}}"\'\'\'].execute();proc.waitFor(); println proc.in.text';
 	
+	
+	if( op.equals("docker") )
+	{
+		def dockerDetails = RemotingDiagnostics.executeGroovy(dockerCmd, slave.getChannel())
+		dockerDetails = Boon.fromJson(dockerDetails)
+		
+		return dockerDetails
+	}
 	
 	if( op.equals("docker_networks") )
 	{
@@ -1519,6 +1538,28 @@ def checkNode( slave, op)
 		
 		if( networkArray )
 		{
+			
+			def containersCmdShort = 'def proc = "docker ps -a --format {{.Names}},".execute(); proc.waitFor(); println proc.in.text';
+					
+			def containersCmdShortList = RemotingDiagnostics.executeGroovy(containersCmdShort, slave.getChannel())
+			
+			containersCmdShortList = containersCmdShortList.split(',')
+	  
+			//for( containersCmdShortListElem in containersCmdShortList )
+			//	containersCmdShortListElem.trim()
+			
+	  
+			def containersCmdShortListClean = []
+			
+			for( containersCmdShortListElem in containersCmdShortList )
+			{
+				if( containersCmdShortListElem.trim() )
+					containersCmdShortListClean.add(containersCmdShortListElem.trim())
+			}
+	  
+			//~ for( cel1 in containersCmdShortListClean)
+				//~ println "*" + cel1 + "*"
+			
 			networkArray.each
 			{
 				network ->
@@ -1598,8 +1639,43 @@ def checkNode( slave, op)
 										image: imageRepoTags, status: containerStatus, running: containerRunning, error: containerError
 									]
 								)
+								
+								if( containersCmdShortListClean.contains(value.Name) )
+									containersCmdShortListClean.remove(value.Name)
 						}
 					}
+			}
+			
+			if( containersCmdShortListClean )
+			{
+				for( containersCmdShortListCleanElem in containersCmdShortListClean )
+				{
+					def runCmdContainer = 'def proc = "docker container inspect '+containersCmdShortListCleanElem+'".execute(); proc.waitFor(); println proc.in.text';
+					def containerDetails = RemotingDiagnostics.executeGroovy(runCmdContainer, slave.getChannel())					
+					containerDetails = Boon.fromJson(containerDetails)
+					
+					def containerStatus = containerDetails[0].State.Status
+					def containerRunning =  containerDetails[0].State.Running
+					def containerDead = containerDetails[0].State.Dead
+					def containerError = containerDetails[0].State.Error
+					
+					def containerImage = containerDetails[0].Image
+					
+					def runCmdImage = 'def proc = "docker image inspect '+containerImage+'".execute(); proc.waitFor(); println proc.in.text';
+					
+					def imageDetails = RemotingDiagnostics.executeGroovy(runCmdImage, slave.getChannel())
+					
+					imageDetails = Boon.fromJson(imageDetails)
+					
+					def imageRepoTags = imageDetails[0].RepoTags[0]
+												
+					outNetworks[containerDetails[0].HostConfig.NetworkMode]["containers"].add(
+						[
+							name: containersCmdShortListCleanElem, mac: "", ip4: "",
+							image: imageRepoTags, status: containerStatus, running: containerRunning, error: containerError
+						]
+					)
+				}
 			}
 			
 			return outNetworks
@@ -1626,6 +1702,17 @@ def generateNodeStart(nodes)
 		"name": nodes[0].name, "kernel": nodes[0].kernel, "noNode": false,  "os": nodes[0].os,
 		"simpleNetworkList": simpleNetworkList, "simpleContainerList": simpleContainerList
 	]
+	
+	if( nodes[0].docker )
+	{
+		node.put("Docker", "Client: " + nodes[0].docker.Client.Version + ", Server: " + nodes[0].docker.Server.Version )
+		node.put("DockerFound", true )
+	}
+	else
+	{
+		node.put("Docker", "Docker not found")
+		node.put("DockerFound", false )
+	}
 	
 	//"simpleNetworkList": [], "simpleContainerList": []
 	
@@ -1667,8 +1754,8 @@ def generateNodeStart(nodes)
 					
 			}
 		}
-		else
-			node.put( "networks", false)
+		//~ else
+			//~ node.put( "networks", false)
 		
 		
 	}
@@ -1714,6 +1801,7 @@ def user = baseFolderProperties.creds.portus_api_token.user
 def pass = baseFolderProperties.creds.portus_api_token.pass
 
 def DB_TAG_ID = "dbt";
+def TYPE_MYSQL_TAG_ID = "mysqlbt";
 def SR_TAG_ID = "srt";
 def AUTH_TAG_ID = "aut";
 def GATEWAY_TAG_ID = "gwt";
@@ -1744,8 +1832,8 @@ repos.each
 {
 	repo ->
 			
-		if( repo.namespace.name.startsWith("cpsiot-deploy") )
-		{
+		//~ if( repo.namespace.name.startsWith("cpsiot-deploy") )
+		//~ {
 			def image = repo.namespace.name + "/" + repo.name
 			
 			def tags = portusApiGET(url, "/api/v1/repositories/"+repo.id+"/tags", user, pass)
@@ -1754,7 +1842,7 @@ repos.each
 			{
 				tag ->
 					
-					if( tag.name.contains( DB_TAG_ID ) )
+					if( tag.name.contains( DB_TAG_ID ) || tag.name.contains( TYPE_MYSQL_TAG_ID ) )
 						dbBuildImages.add( image + ":" + tag.name )
 					
 					if( tag.name.contains( SR_TAG_ID ) )
@@ -1779,7 +1867,7 @@ repos.each
 					
 					buildImages.add(image + ":" + tag.name)
 			}
-		}
+		//~ }
 		
 }
 
@@ -1825,12 +1913,24 @@ if( nodes )
 					"name": ["type": "string", "default": node.name, "readOnly": true],
 					"kernel": ["type": "string", "default": node.kernel, "readOnly": true],
 					"os": ["type": "string", "default": node.os, "readOnly": true],
+					"Docker": [],
 					"noNode": ["type": "boolean", "default": false, "readOnly": true, "format": "checkbox", "options":["hidden": true]],
 					"networks": [ "type": "object", "oneOf": []]
 				],
 				"required": ["name"],
 				"additionalProperties": false
-			]			
+			]
+			
+			if( node.docker )
+			{
+				nodeProperties.properties.Docker = ["type": "string", "default": "Client: " + node.docker.Client.Version + ", Server: " + node.docker.Server.Version, "readOnly": true]
+				nodeProperties.properties.put("DockerFound", ["type": "boolean", "default": true, "readOnly": true, "format": "checkbox", "options":["hidden": true]] )
+			}
+			else
+			{
+				nodeProperties.properties.Docker = ["type": "string", "default": "Docker not found", "readOnly": true]
+				nodeProperties.properties.put("DockerFound", ["type": "boolean", "default": false, "readOnly": true, "format": "checkbox", "options":["hidden": true]] )
+			}
 			
 			node.networks.each
 			{
