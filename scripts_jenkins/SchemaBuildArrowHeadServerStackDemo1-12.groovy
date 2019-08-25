@@ -19,6 +19,7 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 	disable_properties: true,
 	disable_collapse: true,
 	theme: "bootstrap2",
+	iconlib:"fontawesome4",
 	keep_oneof_values : false,
 	show_errors: "interaction",
 	"schema":
