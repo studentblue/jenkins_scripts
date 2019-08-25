@@ -93,11 +93,11 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 					{
 						type: "object",
 						"propertyOrder": 1,
+						format: "grid",
 						oneOf:
 						[
 							{
 								title: "DockerHub",
-								format: "grid",
 								properties:
 								{
 									namespace:
@@ -130,7 +130,6 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 							{
 								type: "object",
 								title: "Cpsiot",
-								format: "grid",
 								properties:
 								{
 									name:
