@@ -18,8 +18,7 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 	disable_edit_json: true,
 	disable_properties: true,
 	disable_collapse: true,
-	theme: "bootstrap2",
-	iconlib:"fontawesome4",
+	theme: "foundation5",
 	keep_oneof_values : false,
 	show_errors: "interaction",
 	"schema":
