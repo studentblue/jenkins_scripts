@@ -18,7 +18,7 @@ def jsonEditorOptions = Boon.fromJson(/{
 	disable_edit_json: true,
 	disable_properties: true,
 	disable_collapse: true,
-	theme: "bootstrap3",
+	theme: "bootstrap4",
 	keep_oneof_values : false,
 	show_errors: "interaction",	
 	"schema":
@@ -167,17 +167,6 @@ def jsonEditorOptions = Boon.fromJson(/{
 					"title": "Image",
 					oneOf:
 					[
-						{
-							"title": "DB",
-							properties:
-							{
-								buildImage:{type: string, enum:[one1, one2, one3], "propertyOrder": 1},								
-								repo:{title: "\/repo", type: string, default: my-database, "propertyOrder": 3},
-								database:{type: boolean, default: true, readOnly: true, format: checkbox, options:{ hidden: true}}
-							},
-							required:[repo,database],
-							"additionalProperties": false
-						},
 						{
 							"title": "SERVICE_REGISTRY",
 							properties:
@@ -359,11 +348,6 @@ def jsonEditorOptions = Boon.fromJson(/{
 		},
 		Images:
 		[
-			{
-				repo: my-database, 
-				database: true,
-				buildImage: one1
-			},
 			{
 				repo: my-registry, 
 				registry: true, 
@@ -672,8 +656,8 @@ repos.each
 				if( tag.name.contains( TYPE_JAVA_TAG_ID ) )
 					javaBuildImages.add( image + ":" + tag.name )
 				
-				if( tag.name.contains( TYPE_MYSQL_TAG_ID ) )
-					mysqlBuildImages.add( image + ":" + tag.name )
+				//~ if( tag.name.contains( TYPE_MYSQL_TAG_ID ) )
+					//~ mysqlBuildImages.add( image + ":" + tag.name )
 				
 				if( tag.name.contains( TYPE_MAVEN_TAG_ID ) )
 					mavenBuildImages.add( image + ":" + tag.name )
@@ -725,13 +709,15 @@ if(mavenBuildImages)
 else
 	jsonEditorOptions.schema.properties.Compile.properties.image.oneOf[1].properties.name.enum = [""]
 
-if( mysqlBuildImages )
-	jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.buildImage.enum = mysqlBuildImages
-else
-	jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.buildImage.enum = [""]
+//~ if( mysqlBuildImages )
+	//~ jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.buildImage.enum = mysqlBuildImages
+//~ else
+	//~ jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.buildImage.enum = [""]
 
 if( javaBuildImages )
 {
+	jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.buildImage.enum = javaBuildImages
+	
 	jsonEditorOptions.schema.properties.Images.items.oneOf[1].properties.buildImage.enum = javaBuildImages
 	
 	jsonEditorOptions.schema.properties.Images.items.oneOf[2].properties.buildImage.enum = javaBuildImages
@@ -741,11 +727,11 @@ if( javaBuildImages )
 	jsonEditorOptions.schema.properties.Images.items.oneOf[4].properties.buildImage.enum = javaBuildImages
 	
 	jsonEditorOptions.schema.properties.Images.items.oneOf[5].properties.buildImage.enum = javaBuildImages
-	
-	jsonEditorOptions.schema.properties.Images.items.oneOf[6].properties.buildImage.enum = javaBuildImages
 }
 else
 {	
+	jsonEditorOptions.schema.properties.Images.items.oneOf[0].properties.buildImage.enum = [""]
+	
 	jsonEditorOptions.schema.properties.Images.items.oneOf[1].properties.buildImage.enum = [""]
 	
 	jsonEditorOptions.schema.properties.Images.items.oneOf[2].properties.buildImage.enum = [""]
@@ -755,8 +741,6 @@ else
 	jsonEditorOptions.schema.properties.Images.items.oneOf[4].properties.buildImage.enum = [""]
 	
 	jsonEditorOptions.schema.properties.Images.items.oneOf[5].properties.buildImage.enum = [""]
-	
-	jsonEditorOptions.schema.properties.Images.items.oneOf[6].properties.buildImage.enum = [""]
 }
 
 if( mavenBuildImages )
@@ -769,30 +753,64 @@ if( cloudNameSpaces )
 else
 	jsonEditorOptions.startval.NameSpace.name = ""
 
-if( mysqlBuildImages )
-	jsonEditorOptions.startval.Images[0].buildImage = mysqlBuildImages[0]
-else
-	jsonEditorOptions.startval.Images[0].buildImage = ""
+//~ if( mysqlBuildImages )
+	//~ jsonEditorOptions.startval.Images[0].buildImage = mysqlBuildImages[0]
+//~ else
+	//~ jsonEditorOptions.startval.Images[0].buildImage = ""
 
 if( javaBuildImages )
 {
 	
+	jsonEditorOptions.startval.Images[0].buildImage = javaBuildImages[0]
 	jsonEditorOptions.startval.Images[1].buildImage = javaBuildImages[0]
 	jsonEditorOptions.startval.Images[2].buildImage = javaBuildImages[0]
 	jsonEditorOptions.startval.Images[3].buildImage = javaBuildImages[0]
 	jsonEditorOptions.startval.Images[4].buildImage = javaBuildImages[0]
 	jsonEditorOptions.startval.Images[5].buildImage = javaBuildImages[0]
-	jsonEditorOptions.startval.Images[6].buildImage = javaBuildImages[0]
 }
 else
 {
 	
-	jsonEditorOptions.startval.Images[1].buildImage = ""
-	jsonEditorOptions.startval.Images[2].buildImage = ""
-	jsonEditorOptions.startval.Images[3].buildImage = ""
-	jsonEditorOptions.startval.Images[4].buildImage = ""
-	jsonEditorOptions.startval.Images[5].buildImage = ""
-	jsonEditorOptions.startval.Images[6].buildImage = ""
+	//~ jsonEditorOptions.startval.Images[0].buildImage = ""
+	//~ jsonEditorOptions.startval.Images[1].buildImage = ""
+	//~ jsonEditorOptions.startval.Images[2].buildImage = ""
+	//~ jsonEditorOptions.startval.Images[3].buildImage = ""
+	//~ jsonEditorOptions.startval.Images[4].buildImage = ""
+	//~ jsonEditorOptions.startval.Images[5].buildImage = ""
+	
+	jsonEditorOptions.schema.properties = 
+	[
+		"Status": 
+		[
+			"type": "object", 
+			"properties": 
+			[
+				"status": ["type": "string", "readOnly": true ]
+			]
+		]
+	]
+	
+	jsonEditorOptions.startval =
+	[ "Status": ["status": "No Build Images found" ] ]
+	
 }
 
 return jsonEditorOptions
+
+			//~ {
+				//~ repo: my-database, 
+				//~ database: true,
+				//~ buildImage: one1
+			//~ },
+
+//~ {
+							//~ "title": "DB",
+							//~ properties:
+							//~ {
+								//~ buildImage:{type: string, enum:[one1, one2, one3], "propertyOrder": 1},								
+								//~ repo:{title: "\/repo", type: string, default: my-database, "propertyOrder": 3},
+								//~ database:{type: boolean, default: true, readOnly: true, format: checkbox, options:{ hidden: true}}
+							//~ },
+							//~ required:[repo,database],
+							//~ "additionalProperties": false
+						//~ },

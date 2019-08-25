@@ -93,7 +93,6 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 					{
 						type: "object",
 						"propertyOrder": 1,
-						format: "grid",
 						oneOf:
 						[
 							{
