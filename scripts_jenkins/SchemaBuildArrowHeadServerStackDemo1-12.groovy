@@ -17,15 +17,10 @@ import net.sf.json.JSONObject;
 def jsonEditorOptions = JSONObject.fromObject(/{
 	disable_edit_json: true,
 	disable_properties: true,
-	no_additional_properties: true,
 	disable_collapse: true,
-	disable_array_add: true,
-	disable_array_delete: true,
-	disable_array_reorder: true,
 	theme: "bootstrap3",
 	keep_oneof_values : false,
-	show_errors: "always",
-	template: "mustache",
+	show_errors: "interaction",
 	"schema":
 	{
 		type: "object",
